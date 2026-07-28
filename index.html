@@ -238,6 +238,38 @@
     </main>
   </div>
 
+  <!-- Technical Info Modal Popup (Non-blocking) -->
+  <div id="infoModalOverlay" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge" id="modalBadge">STAGE 01</span>
+          <h3 id="modalTitle" class="modal-title">Stage Title</h3>
+        </div>
+        <button id="btnModalClose" class="modal-close-btn" title="Close Popup (Esc)">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <span class="modal-section-label">SYSTEM PURPOSE:</span>
+          <p id="modalRationale" class="modal-text">Explanation text here.</p>
+        </div>
+        <div class="modal-section">
+          <span class="modal-section-label">DATA PIPELINE SPECIFICATION:</span>
+          <div id="modalDataSpec" class="modal-data-box">numBlink, materialCode, distanceZone, baseAngle → "1, 5, 1, 180"</div>
+        </div>
+        <div class="modal-section">
+          <span class="modal-section-label">SOURCE MAPPING:</span>
+          <p id="modalReference" class="modal-ref-text">Corresponds to pickUp() in newprogramwaste.ino</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

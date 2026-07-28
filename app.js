@@ -50,77 +50,97 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const MATERIAL_KEYS = Object.keys(MATERIALS);
 
-  // ====== 10 System Pipeline Topology Nodes ======
+  // ====== 10 System Pipeline Topology Nodes (Enriched Specs) ======
   const TOPOLOGY_STAGES = [
     {
       id: "FRAME_CAPTURE",
       number: "01",
       title: "FRAME CAPTURE",
       explanation: "Gripper-mounted camera captures raw video matrix of the intake tray looking down.",
-      codeRef: "detect_script.py (Line 64)"
+      rationale: "The camera mounted near the gripper captures an uncompressed video frame of the intake tray looking directly down. This provides the primary visual input matrix before machine learning evaluation.",
+      dataSpec: "Raw 1920x1080 uncompressed video matrix (3 RGB channels)",
+      reference: "Corresponds to cap.read() in detect_script.py (Line 64)"
     },
     {
       id: "TENS_RESIZE",
       number: "02",
       title: "TENSOR RESIZE (300x300)",
       explanation: "OpenCV resizes raw frame to 300x300 uint8 tensor to fit MobileNet SSD input shape.",
-      codeRef: "detect_script.py (Line 68)"
+      rationale: "OpenCV resizes the raw high-resolution frame down to 300x300 pixels and expands tensor dimensions. This aligns the input with the fixed dimensions expected by the MobileNet SSD TFLite model.",
+      dataSpec: "300x300x3 uint8 array -> reshaped to [1, 300, 300, 3]",
+      reference: "Corresponds to cv2.resize() & np.expand_dims() in detect_script.py (Line 68)"
     },
     {
       id: "TFLITE_INFERENCE",
       number: "03",
       title: "TFLITE INFERENCE",
       explanation: "TFLite Interpreter evaluates tensor and outputs bounding boxes, class IDs, and scores.",
-      codeRef: "detect_script.py (Lines 71-76)"
+      rationale: "The MobileNet SSD TFLite neural network processes the normalized 300x300 image tensor. It computes class probability distributions and spatial bounding box offsets across the frame.",
+      dataSpec: "3 Output Tensors: Bounding Boxes [ymin, xmin, ymax, xmax], Class IDs [1-5], Scores [0.00-1.00]",
+      reference: "Corresponds to interpreter.invoke() in detect_script.py (Lines 71-76)"
     },
     {
       id: "CONFIDENCE_CHECK",
       number: "04",
       title: "CONFIDENCE CHECK (>0.5)",
       explanation: "Filters detections against 0.5 threshold probability to eliminate low-certainty noise.",
-      codeRef: "detect_script.py (Line 80)"
+      rationale: "Detections with confidence probability scores below 0.5 (50%) are discarded. This prevents the vision script from processing weak or uncertain visual artifacts.",
+      dataSpec: "Filtered detections (Score > 0.50, e.g. Cardboard [CONF: 0.94])",
+      reference: "Corresponds to CONFIDENCE_THRESHOLD check in detect_script.py (Line 80)"
     },
     {
       id: "DEBOUNCE_FILTER",
       number: "05",
       title: "DEBOUNCE COUNTER (5x)",
       explanation: "Requires 5 CONSECUTIVE confident matches for a material class before triggering physical arm.",
-      codeRef: "detect_script.py (Line 97)"
+      rationale: "DESIGN DECISION: To prevent the robotic arm from reacting to a single flickery or transient misread frame, a material class must be detected for 5 consecutive frames before it is confirmed.",
+      dataSpec: "Per-class consecutive match counter (e.g. Cardboard: 5/5 -> CONFIRMED)",
+      reference: "Corresponds to DETECTION_THRESHOLD check in detect_script.py (Lines 94-110)"
     },
     {
       id: "SERIAL_SEND",
       number: "06",
       title: "SERIAL TX (PI → ARDUINO)",
       explanation: "Raspberry Pi sends formatted serial packet (code, dist, angle) over COM7 @ 9600 baud.",
-      codeRef: "detect_script.py (Lines 100-108)"
+      rationale: "Once debouncing is verified, the Raspberry Pi formats and transmits a serial command packet over COM7 @ 9600 baud to instruct the Arduino microcontroller which material bin to target.",
+      dataSpec: "Serial Command Packet: numBlink, materialCode, distanceZone, baseAngle (Example: '1, 5, 1, 180')",
+      reference: "Corresponds to send_command_to_arduino() in detect_script.py (Lines 42-48)"
     },
     {
       id: "ARDUINO_LED_FLASH",
       number: "07",
       title: "SERIAL RX & LED FLASH",
       explanation: "Arduino receives packet via Serial.parseInt() and flashes Pin 13 LED N times in confirmation.",
-      codeRef: "newprogramwaste.ino (Lines 73-79)"
+      rationale: "The Arduino parses the incoming serial byte stream via Serial.parseInt() and immediately flashes its built-in Pin 13 LED N times. This provides visual hardware acknowledgment to operators before motor actuation.",
+      dataSpec: "Parsed Integers: numBlink=1, material=5, distance=1, angle=180",
+      reference: "Corresponds to flash() in newprogramwaste.ino (Lines 36-43)"
     },
     {
       id: "ARM_PICKUP",
       number: "08",
       title: "ARM PICKUP INTERPOLATION",
       explanation: "Arduino calls pickUp(), sweeping joint servos degree-by-degree (30ms) to grip intake item.",
-      codeRef: "newprogramwaste.ino (Lines 100-133)"
+      rationale: "Arduino executes pickUp(). Joint servos (Base, Shoulder, Elbow, Wrist, Gripper) sweep degree-by-degree (30ms delay per degree) to reach down into the intake tray and close the gripper claw without mechanical shock.",
+      dataSpec: "Servo Target Angles: Base=25°, Shoulder=45°, Elbow=180°, Wrist2=35°, Hand=180° (CLOSED)",
+      reference: "Corresponds to pickUp() & sweep() in newprogramwaste.ino (Lines 100-133)"
     },
     {
       id: "ARM_TRANSIT_DROPOFF",
       number: "09",
       title: "BIN TRANSIT & DROPOFF",
       explanation: "Base servo rotates to fixed output bin angle (0°-180°) and opens gripper claw to release item.",
-      codeRef: "newprogramwaste.ino (Lines 205-280)"
+      rationale: "Arduino executes dropOff(). The arm lifts the item, rotates the Base servo to the fixed bin angle assigned to that material (Cardboard 0°, Glass 45°, Metal 90°, Paper 135°, Plastic 180°), and opens the gripper.",
+      dataSpec: "Material Code=5 (Plastic) -> Base Servo=180°, Hand Servo=90° (OPEN)",
+      reference: "Corresponds to dropOff() in newprogramwaste.ino (Lines 205-280)"
     },
     {
       id: "HOME_RESET",
       number: "10",
       title: "HOME RESET & DONE REPLY",
       explanation: "Servos return to resting pose facing intake tray; Arduino sends 'Done Moving' back to Pi.",
-      codeRef: "newprogramwaste.ino (Lines 87-88)"
+      rationale: "Arduino executes homeState(), returning the 6 servos back to resting posture with the gripper/camera facing down over the intake tray. It transmits 'Done Moving' over serial to signal readiness for the next scanning cycle.",
+      dataSpec: "Servos: Base=90°, Elbow=110° -> Serial TX: 'Done Moving\\n'",
+      reference: "Corresponds to homeState() & Serial.println('Done Moving') in newprogramwaste.ino (Lines 87-88)"
     }
   ];
 
@@ -165,6 +185,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const topologyNodes = document.getElementById("topologyNodes");
   const topologyExplainerText = document.getElementById("topologyExplainerText");
 
+  // Modal Selectors
+  const infoModalOverlay = document.getElementById("infoModalOverlay");
+  const modalBadge = document.getElementById("modalBadge");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalRationale = document.getElementById("modalRationale");
+  const modalDataSpec = document.getElementById("modalDataSpec");
+  const modalReference = document.getElementById("modalReference");
+  const btnModalClose = document.getElementById("btnModalClose");
+
   const angleBase = document.getElementById("angleBase");
   const angleShoulder = document.getElementById("angleShoulder");
   const angleElbow = document.getElementById("angleElbow");
@@ -191,20 +220,35 @@ document.addEventListener("DOMContentLoaded", () => {
       node.innerHTML = `
         <span class="node-number">${stage.number}</span>
         <span class="node-title">${stage.title}</span>
+        <button class="info-btn" data-stage="${idx}" title="View Stage Details">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
         <span class="node-badge">WAIT</span>
       `;
+
       node.addEventListener("mouseenter", () => {
-        topologyExplainerText.textContent = `${stage.explanation} [${stage.codeRef}]`;
+        topologyExplainerText.textContent = `${stage.explanation} [${stage.reference}]`;
       });
       node.addEventListener("mouseleave", () => {
         const currentStage = TOPOLOGY_STAGES[currentStageIndex];
-        topologyExplainerText.textContent = `${currentStage.explanation} [${currentStage.codeRef}]`;
+        topologyExplainerText.textContent = `${currentStage.explanation} [${currentStage.reference}]`;
       });
-      node.addEventListener("click", () => {
+      node.addEventListener("click", (e) => {
+        // If clicking info button, open modal instead of changing stage
+        if (e.target.closest(".info-btn")) {
+          e.stopPropagation();
+          openInfoModal(idx);
+          return;
+        }
         if (isPlaying) togglePlayPause();
         currentStageIndex = idx;
         executeCurrentStage();
       });
+
       topologyNodes.appendChild(node);
     });
   }
@@ -233,6 +277,35 @@ document.addEventListener("DOMContentLoaded", () => {
     btnClearSerial.addEventListener("click", () => {
       serialLog.innerHTML = `<div class="log-line info">[INIT] Serial log cleared.</div>`;
     });
+
+    // Modal Dismissal Handlers
+    btnModalClose.addEventListener("click", closeInfoModal);
+    infoModalOverlay.addEventListener("click", (e) => {
+      if (e.target === infoModalOverlay) {
+        closeInfoModal();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !infoModalOverlay.classList.contains("hidden")) {
+        closeInfoModal();
+      }
+    });
+  }
+
+  // ====== Info Modal Popup Control ======
+  function openInfoModal(stageIdx) {
+    const stage = TOPOLOGY_STAGES[stageIdx];
+    modalBadge.textContent = `STAGE ${stage.number}`;
+    modalTitle.textContent = stage.title;
+    modalRationale.textContent = stage.rationale;
+    modalDataSpec.textContent = stage.dataSpec;
+    modalReference.textContent = stage.reference;
+    infoModalOverlay.classList.remove("hidden");
+  }
+
+  function closeInfoModal() {
+    infoModalOverlay.classList.add("hidden");
   }
 
   function applyTheme(theme) {
@@ -383,7 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ====== Update Topology Node Graph Highlights ======
   function updateTopologyUI() {
     const currentStage = TOPOLOGY_STAGES[currentStageIndex];
-    topologyExplainerText.textContent = `${currentStage.explanation} [${currentStage.codeRef}]`;
+    topologyExplainerText.textContent = `${currentStage.explanation} [${currentStage.reference}]`;
 
     const nodes = topologyNodes.querySelectorAll(".topo-node");
     nodes.forEach((node, idx) => {

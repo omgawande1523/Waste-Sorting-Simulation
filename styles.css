@@ -40,6 +40,8 @@
   --topo-node-done-bg: #064e3b;
   --topo-node-done-border: #10b981;
 
+  --modal-backdrop: rgba(0, 0, 0, 0.65);
+
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'Fira Code', monospace;
 }
@@ -78,6 +80,8 @@
   --topo-node-active-border: #2563eb;
   --topo-node-done-bg: #d1fae5;
   --topo-node-done-border: #059669;
+
+  --modal-backdrop: rgba(15, 23, 42, 0.45);
 }
 
 * {
@@ -305,7 +309,7 @@ html, body {
   display: grid;
   grid-template-columns: 310px 1fr 390px;
   gap: 0.6rem;
-  min-height: 0; /* Prevents overflow */
+  min-height: 0;
 }
 
 .panel {
@@ -618,13 +622,14 @@ html, body {
 }
 
 .topo-node {
+  position: relative;
   background: var(--topo-node-bg);
   border: 1px solid var(--topo-node-border);
   border-radius: 4px;
   padding: 0.35rem 0.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.4rem;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -649,11 +654,11 @@ html, body {
   font-size: 0.65rem;
   font-weight: 700;
   color: var(--text-muted);
-  width: 20px;
+  width: 18px;
 }
 
 .node-title {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   flex: 1;
   color: var(--text-main);
@@ -661,7 +666,7 @@ html, body {
 
 .node-badge {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   padding: 1px 4px;
   border-radius: 2px;
   background: var(--border-color);
@@ -676,6 +681,29 @@ html, body {
 .topo-node.done .node-badge {
   background: var(--accent-success);
   color: #ffffff;
+}
+
+/* Info Icon Button on Topology Node */
+.info-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.info-btn:hover {
+  color: var(--accent-primary);
+  background: var(--bg-panel-subtle);
+}
+
+.topo-node.active .info-btn {
+  color: var(--accent-primary);
 }
 
 .topology-explainer-bar {
@@ -695,7 +723,7 @@ html, body {
 }
 
 .explainer-text {
-  font-size: 0.73rem;
+  font-size: 0.72rem;
   color: var(--text-main);
   line-height: 1.35;
   margin-top: 2px;
@@ -706,7 +734,7 @@ html, body {
   background: var(--terminal-bg);
   border-radius: 4px;
   border: 1px solid var(--border-color);
-  height: 110px;
+  height: 105px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -746,3 +774,133 @@ html, body {
 .log-line.tx { color: #38bdf8; font-weight: 600; }
 .log-line.rx { color: #4ade80; }
 .log-line.highlight { color: #f59e0b; font-weight: 700; }
+
+/* ==========================================================================
+   Info Modal Popup System
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--modal-backdrop);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  width: 480px;
+  max-width: 90vw;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.modal-header {
+  background: var(--bg-panel-subtle);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.modal-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: var(--accent-primary);
+  color: #ffffff;
+  border-radius: 3px;
+}
+
+.modal-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.4px;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.modal-close-btn:hover {
+  color: var(--accent-danger);
+  background: var(--border-color);
+}
+
+.modal-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modal-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  letter-spacing: 0.5px;
+}
+
+.modal-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.modal-data-box {
+  background: var(--terminal-bg);
+  color: var(--terminal-text);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  word-break: break-all;
+}
+
+.modal-ref-text {
+  font-size: 0.78rem;
+  color: var(--text-subtle);
+  font-weight: 500;
+}
