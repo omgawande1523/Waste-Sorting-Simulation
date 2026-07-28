@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Waste Segregation System — Engineering Simulation</title>
+  <title>AI Waste Segregation System — Single-Frame Topology Simulation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,12 +12,12 @@
 <body>
   <div class="app-container">
     
-    <!-- Top Engineering Control Bar -->
+    <!-- Single-Frame Header Bar -->
     <header class="app-header">
       <div class="header-brand">
         <div class="status-indicator active"></div>
         <div>
-          <h1 class="brand-title">SYSTEM SIMULATION: AI WASTE SORTING ROBOTIC ARM</h1>
+          <h1 class="brand-title">SYSTEM ARCHITECTURE SIMULATION: AI WASTE SORTING ROBOTIC ARM</h1>
           <p class="brand-subtitle">Grounded in <code>detect_script.py</code> (Raspberry Pi) & <code>newprogramwaste.ino</code> (Arduino UNO)</p>
         </div>
       </div>
@@ -26,13 +26,13 @@
       <div class="controls-toolbar">
         <div class="button-group">
           <button id="btnPlayPause" class="btn btn-primary" title="Play or Pause Simulation">
-            <svg id="playSvg" class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <svg id="playSvg" class="btn-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
               <polygon points="5,3 19,12 5,21"></polygon>
             </svg>
             <span id="playText">PLAY</span>
           </button>
           <button id="btnPrev" class="btn btn-secondary" title="Step Previous">
-            <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
               <polygon points="19,20 9,12 19,4"></polygon>
               <line x1="5" y1="4" x2="5" y2="20" stroke="currentColor" stroke-width="2"></line>
             </svg>
@@ -40,13 +40,13 @@
           </button>
           <button id="btnNext" class="btn btn-secondary" title="Step Next">
             NEXT
-            <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
               <polygon points="5,4 15,12 5,20"></polygon>
               <line x1="19" y1="4" x2="19" y2="20" stroke="currentColor" stroke-width="2"></line>
             </svg>
           </button>
           <button id="btnRestart" class="btn btn-secondary" title="Reset Cycle">
-            <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="1 4 1 10 7 10"></polyline>
               <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
             </svg>
@@ -77,14 +77,6 @@
 
         <div class="control-field toggle-field">
           <label class="switch-label">
-            <input type="checkbox" id="codeToggle" checked>
-            <span class="switch-slider"></span>
-            <span class="label-text">SHOW SOURCE</span>
-          </label>
-        </div>
-
-        <div class="control-field toggle-field">
-          <label class="switch-label">
             <input type="checkbox" id="themeToggle">
             <span class="switch-slider"></span>
             <span id="themeLabelText" class="label-text">LIGHT MODE</span>
@@ -93,20 +85,20 @@
       </div>
     </header>
 
-    <!-- Main Dashboard Grid -->
+    <!-- Single-Frame Widescreen 3-Column Grid -->
     <main class="dashboard-grid">
       
-      <!-- Panel 1: Vision Feed & AI Model -->
+      <!-- Panel 1: Vision Feed & Debounce Tracker -->
       <section class="panel camera-panel">
         <div class="panel-header">
           <div class="panel-title">
-            <svg class="panel-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="panel-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            <h2>GRIPPER CAMERA FEED (300x300 INPUT)</h2>
+            <h2>GRIPPER CAMERA FEED</h2>
           </div>
-          <span class="status-badge live">FEED ACTIVE: 30 FPS</span>
+          <span class="status-badge live">300x300 TFLITE</span>
         </div>
         
         <div class="camera-viewport">
@@ -119,10 +111,10 @@
           </div>
         </div>
 
-        <!-- Debouncing & Stability Verification Meter -->
+        <!-- Debouncing Filter -->
         <div class="debounce-panel">
           <div class="debounce-header">
-            <span class="section-title">CONSECUTIVE FRAME DEBOUNCE FILTER</span>
+            <span class="section-title">5-FRAME CONSECUTIVE DEBOUNCE</span>
             <span id="debounceStatusText" class="status-value">0 / 5 CONFIRMED</span>
           </div>
           <div class="debounce-bars">
@@ -155,31 +147,31 @@
         </div>
       </section>
 
-      <!-- Panel 2: 6-DOF Arm & Sorting Workspace Arena -->
+      <!-- Panel 2: Physical Workspace Arena & Arm Diagram -->
       <section class="panel arm-panel">
         <div class="panel-header">
           <div class="panel-title">
-            <svg class="panel-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="panel-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
               <line x1="8" y1="21" x2="16" y2="21"></line>
               <line x1="12" y1="17" x2="12" y2="21"></line>
             </svg>
-            <h2>PHYSICAL WORKSPACE & ROBOTIC ARM ARENA</h2>
+            <h2>PHYSICAL WORKSPACE & 6-DOF ROBOTIC ARM</h2>
           </div>
           <div class="hardware-telemetry-status">
-            <span id="ledIndicator" class="hardware-tag">PIN 13 LED: INACTIVE</span>
+            <span id="ledIndicator" class="hardware-tag">PIN 13 LED: OFF</span>
             <span class="hardware-tag active">SERIAL: COM7 @ 9600 BAUD</span>
           </div>
         </div>
 
         <div class="arm-arena-container">
-          <svg id="armSvg" viewBox="0 0 740 480" preserveAspectRatio="xMidYMid meet"></svg>
+          <svg id="armSvg" viewBox="0 0 740 440" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
 
         <!-- Telemetry Gauges -->
         <div class="telemetry-grid">
           <div class="telemetry-card">
-            <span class="label">BASE SERVO (PIN 3)</span>
+            <span class="label">BASE (PIN 3)</span>
             <span id="angleBase" class="value">90°</span>
           </div>
           <div class="telemetry-card">
@@ -205,60 +197,40 @@
         </div>
       </section>
 
-      <!-- Panel 3: Serial Protocol Terminal Monitor -->
-      <section class="panel serial-panel">
+      <!-- Panel 3: System Pipeline Topology & Serial Monitor -->
+      <section class="panel topology-panel">
         <div class="panel-header">
           <div class="panel-title">
-            <svg class="panel-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="4 17 10 11 4 5"></polyline>
-              <line x1="12" y1="19" x2="20" y2="19"></line>
+            <svg class="panel-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
             </svg>
-            <h2>SERIAL MONITOR LOG (RASPBERRY PI ⟷ ARDUINO)</h2>
+            <h2>SYSTEM PIPELINE TOPOLOGY & SERIAL LOG</h2>
           </div>
           <button id="btnClearSerial" class="btn btn-xs">CLEAR LOG</button>
         </div>
+
+        <!-- System Architecture Topology Graph -->
+        <div class="topology-container">
+          <div id="topologyNodes" class="topology-nodes">
+            <!-- Rendered dynamically by JS -->
+          </div>
+          
+          <div class="topology-explainer-bar">
+            <span class="explainer-label">STAGE RATIONALE:</span>
+            <p id="topologyExplainerText" class="explainer-text">Select or step to a stage to view system explanation.</p>
+          </div>
+        </div>
+
+        <!-- Serial Terminal Strip -->
         <div class="terminal-container">
           <div class="terminal-header">
-            <span class="term-status">PORT: COM7 | BAUD: 9600 | PARITY: NONE</span>
+            <span class="term-status">SERIAL PROTOCOL MONITOR (COM7 @ 9600 BAUD)</span>
           </div>
           <div id="serialLog" class="terminal-body">
             <div class="log-line info">[INIT] Serial interface attached to COM7 @ 9600 baud.</div>
             <div class="log-line rx">&lt;Connected to Arduino&gt;</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Panel 4: System Rationale & Source Code Sync -->
-      <section class="panel explainer-panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <svg class="panel-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <h2 id="stageTitle">STAGE 1/8: FRAME CAPTURE & RESIZING</h2>
-          </div>
-          <span id="stageBadge" class="status-badge stage">STAGE 1</span>
-        </div>
-
-        <div class="explainer-content">
-          <div class="rationale-box">
-            <h3 class="section-title">ENGINEERING RATIONALE:</h3>
-            <p id="stageExplanation">
-              The camera mounted on the arm gripper takes an uncompressed frame of the intake tray. The matrix is resized to 300x300 pixels to match MobileNet SSD TFLite model tensor dimensions.
-            </p>
-          </div>
-
-          <div id="codeSnippetContainer" class="code-box">
-            <div class="code-header">
-              <span id="codeFilename" class="filename">detect_script.py (Lines 64-69)</span>
-              <span class="language">PYTHON</span>
-            </div>
-            <pre><code id="codeSnippetText"># ====== Read Frame & Resize ======
-ret, frame = cap.read()
-input_image = cv2.resize(frame, (width, height))
-input_data = np.expand_dims(input_image, axis=0).astype(np.uint8)</code></pre>
           </div>
         </div>
       </section>
