@@ -128,6 +128,9 @@ html, body {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .status-indicator {
@@ -135,18 +138,25 @@ html, body {
   height: 8px;
   border-radius: 50%;
   background-color: var(--accent-success);
+  flex-shrink: 0;
 }
 
 .brand-title {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.4px;
   color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-subtitle {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-subtitle code {
@@ -162,7 +172,8 @@ html, body {
 .controls-toolbar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
+  flex-shrink: 0;
 }
 
 .toolbar-divider {
@@ -458,62 +469,159 @@ html, body {
   color: var(--text-muted);
 }
 
-.status-value {
+.pose-telemetry-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 3px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--accent-primary);
+  font-size: 0.62rem;
+  color: var(--text-main);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  z-index: 5;
 }
 
-.debounce-bars {
+[data-theme="light"] .pose-telemetry-badge {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.status-badge-sm {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--bg-panel);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-color);
+}
+
+.policy-rules-strip {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
+  margin-bottom: 0.35rem;
 }
 
-.debounce-row {
+.rule-badge {
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.68rem;
+  gap: 5px;
 }
 
-.debounce-row .class-label {
-  width: 60px;
-  color: var(--text-subtle);
-  font-weight: 600;
+.rule-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-subtle);
 }
 
-.debounce-row .track {
-  flex: 1;
-  height: 5px;
-  background: var(--border-color);
-  border-radius: 2px;
-  overflow: hidden;
+.rule-badge.fast { border-color: rgba(37, 99, 235, 0.4); }
+.rule-badge.fast .dot { background: var(--accent-primary); }
+.rule-badge.slow { border-color: rgba(217, 119, 6, 0.4); }
+.rule-badge.slow .dot { background: var(--accent-warning); }
+
+.window-slots-container {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  margin-bottom: 0.35rem;
 }
 
-.debounce-row .fill {
-  height: 100%;
-  width: 0%;
-  border-radius: 2px;
-  transition: width 0.25s ease;
+.window-slot {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  padding: 4px 1px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  transition: all 0.2s ease;
 }
 
-.debounce-row[data-class="cardboard"] .fill { background: var(--mat-cardboard); }
-.debounce-row[data-class="glass"] .fill { background: var(--mat-glass); }
-.debounce-row[data-class="metal"] .fill { background: var(--mat-metal); }
-.debounce-row[data-class="paper"] .fill { background: var(--mat-paper); }
-.debounce-row[data-class="plastic"] .fill { background: var(--mat-plastic); }
-
-.debounce-row .count-value {
+.window-slot .slot-num {
+  font-size: 0.55rem;
   font-family: var(--font-mono);
   color: var(--text-subtle);
-  width: 24px;
-  text-align: right;
 }
 
-.debounce-row.active .class-label { color: var(--text-main); font-weight: 700; }
-.debounce-row.active .count-value { color: var(--accent-primary); font-weight: 700; }
+.window-slot .slot-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.window-slot .slot-conf {
+  font-size: 0.55rem;
+  font-family: var(--font-mono);
+  color: var(--text-subtle);
+}
+
+.window-slot.filled {
+  border-color: var(--accent-primary);
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.window-slot.filled .slot-label { color: var(--text-main); }
+.window-slot.filled .slot-conf { color: var(--accent-primary); font-weight: 600; }
+
+.window-slot.hit-fast {
+  border-color: var(--accent-success);
+  background: rgba(22, 163, 74, 0.2);
+}
+
+.window-slot.hit-fast .slot-label, .window-slot.hit-fast .slot-conf {
+  color: var(--accent-success);
+  font-weight: 700;
+}
+
+.policy-outcome-bar {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  padding: 3px 6px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.outcome-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  white-space: nowrap;
+}
+
+.outcome-value {
+  font-size: 0.64rem;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ==========================================================================
    Panel 2: Physical Workspace Arena
@@ -598,10 +706,92 @@ html, body {
 }
 
 /* ==========================================================================
-   Panel 3: System Pipeline Topology Graph & Serial Log Strip
+   Panel 3: System Pipeline Mesh Topology Graph & Serial Log Strip
    ========================================================================== */
+.panel-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.panel3-playback-controls {
+  display: none;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.topology-panel.is-expanded .panel3-playback-controls {
+  display: flex;
+}
+
+.speed-field-xs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.25rem;
+  padding-left: 0.35rem;
+  border-left: 1px solid var(--border-color);
+}
+
+.field-label-xs {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.range-input-xs {
+  width: 60px;
+  height: 4px;
+  cursor: pointer;
+}
+
+.btn-xs {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.btn-icon-only {
+  font-family: var(--font-main);
+  padding: 0.25rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-panel-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btn-icon-only:hover {
+  color: var(--text-main);
+  background: var(--border-color);
+  border-color: var(--accent-primary);
+}
+
 .topology-panel {
   grid-column: 3 / 4;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Expanded Full Viewport Overlay Mode for Panel 3 */
+.topology-panel.is-expanded {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1000 !important;
+  background: var(--bg-main) !important;
+  padding: 1.25rem 1.5rem !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.85) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.75rem !important;
 }
 
 .topology-container {
@@ -612,98 +802,170 @@ html, body {
   min-height: 0;
 }
 
-.topology-nodes {
+.mesh-viewport {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  overflow-y: auto;
-  padding-right: 2px;
-}
-
-.topo-node {
+  background: var(--canvas-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
   position: relative;
-  background: var(--topo-node-bg);
-  border: 1px solid var(--topo-node-border);
-  border-radius: 4px;
-  padding: 0.35rem 0.5rem;
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.topo-node:hover {
-  border-color: var(--accent-primary);
-}
-
-.topo-node.active {
-  background: var(--topo-node-active-bg);
-  border-color: var(--topo-node-active-border);
-  font-weight: 700;
-}
-
-.topo-node.done {
-  background: var(--topo-node-done-bg);
-  border-color: var(--topo-node-done-border);
-}
-
-.node-number {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  width: 18px;
-}
-
-.node-title {
-  font-size: 0.7rem;
-  font-weight: 600;
-  flex: 1;
-  color: var(--text-main);
-}
-
-.node-badge {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  padding: 1px 4px;
-  border-radius: 2px;
-  background: var(--border-color);
-  color: var(--text-muted);
-}
-
-.topo-node.active .node-badge {
-  background: var(--accent-primary);
-  color: #ffffff;
-}
-
-.topo-node.done .node-badge {
-  background: var(--accent-success);
-  color: #ffffff;
-}
-
-/* Info Icon Button on Topology Node */
-.info-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 2px;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  min-height: 0;
 }
 
-.info-btn:hover {
-  color: var(--accent-primary);
-  background: var(--bg-panel-subtle);
+.mesh-svg-element {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
-.topo-node.active .info-btn {
-  color: var(--accent-primary);
+/* SVG Topology Mesh Elements */
+.mesh-node {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mesh-node-rect {
+  fill: var(--bg-panel);
+  stroke: var(--border-color);
+  stroke-width: 1.5;
+  rx: 5;
+  ry: 5;
+  transition: all 0.2s ease;
+}
+
+.mesh-node:hover .mesh-node-rect {
+  stroke: var(--accent-primary);
+}
+
+.mesh-node.active .mesh-node-rect {
+  fill: var(--bg-panel-subtle);
+  stroke: var(--accent-primary);
+  stroke-width: 2.5;
+}
+
+.mesh-node.done .mesh-node-rect {
+  fill: var(--bg-panel-subtle);
+  stroke: var(--accent-success);
+  stroke-width: 2;
+}
+
+.mesh-group-rect {
+  fill: rgba(15, 23, 42, 0.4);
+  stroke: var(--border-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  rx: 6;
+  ry: 6;
+}
+
+[data-theme="light"] .mesh-group-rect {
+  fill: rgba(241, 245, 249, 0.6);
+}
+
+.mesh-group-rect.active {
+  stroke: var(--accent-primary);
+}
+
+.mesh-node-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.mesh-node-title {
+  font-family: var(--font-main);
+  font-size: 11.5px;
+  font-weight: 700;
+  fill: var(--text-main);
+}
+
+.mesh-node-sub {
+  font-family: var(--font-main);
+  font-size: 9.5px;
+  fill: var(--text-subtle);
+}
+
+.mesh-node-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.mesh-node-info {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--accent-primary);
+}
+
+/* Edge Lines & Labels */
+.mesh-edge {
+  fill: none;
+  stroke: var(--border-color);
+  stroke-width: 1.5;
+  transition: all 0.25s ease;
+}
+
+.mesh-edge.active {
+  stroke: var(--accent-primary);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 3;
+  animation: meshFlow 0.8s linear infinite;
+}
+
+.mesh-edge.done {
+  stroke: var(--accent-success);
+  stroke-width: 2;
+}
+
+.mesh-edge.feedback {
+  stroke: #a855f7;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.mesh-edge.feedback.active {
+  stroke: #c084fc;
+  stroke-width: 2.5;
+  animation: meshFlow 0.8s linear infinite;
+}
+
+@keyframes meshFlow {
+  from { stroke-dashoffset: 18; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Edge Text Labels */
+.edge-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  fill: var(--text-subtle);
+}
+
+.edge-label.fast-label { fill: var(--accent-primary); }
+.edge-label.amb-label { fill: var(--accent-warning); }
+.edge-label.feedback-label { fill: #c084fc; font-weight: 700; }
+
+/* RL Badge Styling */
+.rl-badge-rect {
+  fill: var(--accent-primary);
+  rx: 3;
+  ry: 3;
+}
+
+.rl-badge-text {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  fill: #ffffff;
+  text-anchor: middle;
 }
 
 .topology-explainer-bar {
@@ -788,7 +1050,7 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 2500 !important;
   opacity: 1;
   transition: opacity 0.2s ease;
 }
@@ -803,7 +1065,7 @@ html, body {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  width: 480px;
+  width: 500px;
   max-width: 90vw;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
   overflow: hidden;
@@ -886,6 +1148,16 @@ html, body {
   font-size: 0.82rem;
   color: var(--text-muted);
   line-height: 1.5;
+}
+
+.modal-path-note {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--accent-primary);
+  background: var(--bg-panel-subtle);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
 }
 
 .modal-data-box {

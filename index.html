@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Waste Segregation System — Single-Frame Topology Simulation</title>
+  <title>AI Waste Segregation System — Architecture & Simulation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
         <div class="status-indicator active"></div>
         <div>
           <h1 class="brand-title">SYSTEM ARCHITECTURE SIMULATION: AI WASTE SORTING ROBOTIC ARM</h1>
-          <p class="brand-subtitle">Grounded in <code>detect_script.py</code> (Raspberry Pi) & <code>newprogramwaste.ino</code> (Arduino UNO)</p>
+          <p class="brand-subtitle">Grounded in <code>detect_script.py</code> (8-Frame Decision Policy, BBox Pose Estimator) &amp; <code>newprogramwaste.ino</code></p>
         </div>
       </div>
 
@@ -58,7 +58,7 @@
 
         <div class="control-field">
           <label for="speedSlider" class="field-label">SPEED: <span id="speedVal">1.0x</span></label>
-          <input type="range" id="speedSlider" min="0.5" max="4.0" step="0.5" value="1.0" class="range-input">
+          <input type="range" id="speedSlider" min="0.1" max="4.0" step="0.1" value="1.0" class="range-input">
         </div>
 
         <div class="control-field">
@@ -88,7 +88,7 @@
     <!-- Single-Frame Widescreen 3-Column Grid -->
     <main class="dashboard-grid">
       
-      <!-- Panel 1: Vision Feed & Debounce Tracker -->
+      <!-- Panel 1: Vision Feed & Pose / Decision Policy -->
       <section class="panel camera-panel">
         <div class="panel-header">
           <div class="panel-title">
@@ -96,7 +96,7 @@
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            <h2>GRIPPER CAMERA FEED</h2>
+            <h2>CAMERA FEED &amp; BBOX POSE ESTIMATION</h2>
           </div>
           <span class="status-badge live">300x300 TFLITE</span>
         </div>
@@ -108,41 +108,36 @@
               <span id="boxLabel" class="box-label">CARDBOARD [CONF: 0.92]</span>
             </div>
             <div class="crosshair-target"></div>
+            <!-- BBox Pose Telemetry Overlay Badge -->
+            <div class="pose-telemetry-badge">
+              <span id="poseAngleText">BASE ANGLE: 45°</span>
+              <span id="poseZoneText">DIST ZONE: 2</span>
+              <span id="poseRadiusText">RADIUS: 0.35</span>
+            </div>
           </div>
         </div>
 
-        <!-- Debouncing Filter -->
+        <!-- Adaptive Decision Policy (8-Frame Sliding Window) -->
         <div class="debounce-panel">
           <div class="debounce-header">
-            <span class="section-title">5-FRAME CONSECUTIVE DEBOUNCE</span>
-            <span id="debounceStatusText" class="status-value">0 / 5 CONFIRMED</span>
+            <span class="section-title">ADAPTIVE DECISION POLICY (8-FRAME WINDOW)</span>
+            <span id="policyStatusBadge" class="status-badge-sm">SLIDING WINDOW</span>
           </div>
-          <div class="debounce-bars">
-            <div class="debounce-row" data-class="cardboard">
-              <span class="class-label">Cardboard</span>
-              <div class="track"><div class="fill" style="width: 0%;"></div></div>
-              <span class="count-value">0/5</span>
-            </div>
-            <div class="debounce-row" data-class="glass">
-              <span class="class-label">Glass</span>
-              <div class="track"><div class="fill" style="width: 0%;"></div></div>
-              <span class="count-value">0/5</span>
-            </div>
-            <div class="debounce-row" data-class="metal">
-              <span class="class-label">Metal</span>
-              <div class="track"><div class="fill" style="width: 0%;"></div></div>
-              <span class="count-value">0/5</span>
-            </div>
-            <div class="debounce-row" data-class="paper">
-              <span class="class-label">Paper</span>
-              <div class="track"><div class="fill" style="width: 0%;"></div></div>
-              <span class="count-value">0/5</span>
-            </div>
-            <div class="debounce-row" data-class="plastic">
-              <span class="class-label">Plastic</span>
-              <div class="track"><div class="fill" style="width: 0%;"></div></div>
-              <span class="count-value">0/5</span>
-            </div>
+
+          <!-- Dual Policy Threshold Badges -->
+          <div class="policy-rules-strip">
+            <div class="rule-badge fast"><span class="dot"></span> FAST PATH: ≥3 frames @ ≥0.80 conf</div>
+            <div class="rule-badge slow"><span class="dot"></span> SLOW PATH: ≥5 frames @ ≥0.55 conf</div>
+          </div>
+
+          <!-- 8 Window Frame Slots -->
+          <div class="window-slots-container" id="windowSlotsContainer">
+            <!-- Rendered by JS -->
+          </div>
+
+          <div class="policy-outcome-bar">
+            <span class="outcome-label">DECISION STATE:</span>
+            <span id="policyOutcomeText" class="outcome-value">Accumulating frame observations...</span>
           </div>
         </div>
       </section>
@@ -156,11 +151,11 @@
               <line x1="8" y1="21" x2="16" y2="21"></line>
               <line x1="12" y1="17" x2="12" y2="21"></line>
             </svg>
-            <h2>PHYSICAL WORKSPACE & 6-DOF ROBOTIC ARM</h2>
+            <h2>PHYSICAL WORKSPACE &amp; NON-BLOCKING 6-DOF ARM</h2>
           </div>
           <div class="hardware-telemetry-status">
             <span id="ledIndicator" class="hardware-tag">PIN 13 LED: OFF</span>
-            <span class="hardware-tag active">SERIAL: COM7 @ 9600 BAUD</span>
+            <span id="packetTag" class="hardware-tag active">SERIAL PACKET: --</span>
           </div>
         </div>
 
@@ -197,8 +192,8 @@
         </div>
       </section>
 
-      <!-- Panel 3: System Pipeline Topology & Serial Monitor -->
-      <section class="panel topology-panel">
+      <!-- Panel 3: System Pipeline Mesh Topology & Serial Monitor -->
+      <section class="panel topology-panel" id="topologyPanel">
         <div class="panel-header">
           <div class="panel-title">
             <svg class="panel-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
@@ -206,27 +201,53 @@
               <polyline points="2 17 12 22 22 17"></polyline>
               <polyline points="2 12 12 17 22 12"></polyline>
             </svg>
-            <h2>SYSTEM PIPELINE TOPOLOGY & SERIAL LOG</h2>
+            <h2>SYSTEM ARCHITECTURE MESH TOPOLOGY</h2>
           </div>
-          <button id="btnClearSerial" class="btn btn-xs">CLEAR LOG</button>
+          <div class="panel-header-controls">
+            <!-- Playback Controls for Panel 3 (Visible in normal & expanded views) -->
+            <div class="panel3-playback-controls" id="panel3PlaybackControls">
+              <button id="btnPanel3PlayPause" class="btn btn-primary btn-xs" title="Play or Pause Simulation">
+                <svg id="panel3PlaySvg" class="btn-icon" viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+                  <polygon points="5,3 19,12 5,21"></polygon>
+                </svg>
+                <span id="panel3PlayText">PLAY</span>
+              </button>
+              <button id="btnPanel3Prev" class="btn btn-secondary btn-xs" title="Step Previous">PREV</button>
+              <button id="btnPanel3Next" class="btn btn-secondary btn-xs" title="Step Next">NEXT</button>
+              <button id="btnPanel3Restart" class="btn btn-secondary btn-xs" title="Reset Cycle">RESTART</button>
+              <div class="control-field speed-field-xs" title="Simulation Speed (0.1x Slow Motion to 4.0x Rapid)">
+                <label for="panel3SpeedSlider" class="field-label-xs">SPEED: <span id="panel3SpeedVal">1.0x</span></label>
+                <input type="range" id="panel3SpeedSlider" min="0.1" max="4.0" step="0.1" value="1.0" class="range-input-xs">
+              </div>
+            </div>
+            <button id="btnClearSerial" class="btn btn-xs" title="Clear Serial Terminal Log">CLEAR LOG</button>
+            <button id="btnExpandMesh" class="btn btn-icon-only" title="Expand Panel 3 (Full Screen Overlay)">
+              <svg id="expandSvg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <polyline points="9 21 3 21 3 15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <!-- System Architecture Topology Graph -->
-        <div class="topology-container">
-          <div id="topologyNodes" class="topology-nodes">
-            <!-- Rendered dynamically by JS -->
+        <!-- Full System Architecture Topology Mesh Container -->
+        <div class="topology-container" id="topologyContainer">
+          <div class="mesh-viewport">
+            <svg id="meshSvg" viewBox="0 0 1260 510" preserveAspectRatio="xMidYMid meet" class="mesh-svg-element"></svg>
           </div>
           
           <div class="topology-explainer-bar">
-            <span class="explainer-label">STAGE RATIONALE:</span>
-            <p id="topologyExplainerText" class="explainer-text">Select or step to a stage to view system explanation.</p>
+            <span class="explainer-label">SYSTEM ARCHITECTURE STATUS:</span>
+            <p id="topologyExplainerText" class="explainer-text">Click any node or run simulation to inspect live active trajectory.</p>
           </div>
         </div>
 
         <!-- Serial Terminal Strip -->
         <div class="terminal-container">
           <div class="terminal-header">
-            <span class="term-status">SERIAL PROTOCOL MONITOR (COM7 @ 9600 BAUD)</span>
+            <span class="term-status">SERIAL PROTOCOL MONITOR (COM7 @ 9600 BAUD) — 4-INT PACKET PROTOCOL</span>
           </div>
           <div id="serialLog" class="terminal-body">
             <div class="log-line info">[INIT] Serial interface attached to COM7 @ 9600 baud.</div>
@@ -259,8 +280,12 @@
           <p id="modalRationale" class="modal-text">Explanation text here.</p>
         </div>
         <div class="modal-section">
+          <span class="modal-section-label">EXECUTION PATH TYPE:</span>
+          <p id="modalPathNote" class="modal-path-note">Path note text here.</p>
+        </div>
+        <div class="modal-section">
           <span class="modal-section-label">DATA PIPELINE SPECIFICATION:</span>
-          <div id="modalDataSpec" class="modal-data-box">numBlink, materialCode, distanceZone, baseAngle → "1, 5, 1, 180"</div>
+          <div id="modalDataSpec" class="modal-data-box">numBlink material distance angle → "5 5 2 126\n"</div>
         </div>
         <div class="modal-section">
           <span class="modal-section-label">SOURCE MAPPING:</span>
@@ -270,6 +295,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
