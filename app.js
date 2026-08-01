@@ -7,7 +7,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   // ====== Material Definitions with Distinct Bounding Box Coordinates ======
   // Fast Path: Cardboard (0.92), Metal (0.94), Plastic (0.95)
-  // Ambiguous Path: Glass (0.72 - Glass/Plastic Ambiguity), Paper (0.65 - Wet/Dry Paper Ambiguity)
+  // Ambiguous Path: Glass (0.72 - Glass/Plastic Ambiguity)
   const MATERIALS = {
     cardboard: {
       name: "Cardboard",
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
       code: 4,
       color: "var(--mat-paper)",
       binAngle: 135,
-      confidence: 0.65, // Ambiguous path trigger
+      confidence: 0.88, // Fast path
       box: { xmin: 0.15, ymin: 0.55, xmax: 0.45, ymax: 0.85 }
     },
     plastic: {
@@ -89,22 +89,16 @@ document.addEventListener("DOMContentLoaded", () => {
       stageIndex: 2,
       number: "03",
       title: "Specialist Agents",
-      sub: "Domain Expert Classifiers",
+      sub: "Domain Expert Classifier",
       isGroup: true,
-      x: 435, y: 215, w: 235, h: 195,
+      x: 435, y: 215, w: 235, h: 120,
       hasRl: false,
       subNodes: [
         {
           id: "SPEC_GLASS_PLASTIC",
           title: "Glass vs Plastic Specialist",
           sub: "Reflectance & Specular Classifier",
-          x: 445, y: 245, w: 215, h: 70
-        },
-        {
-          id: "SPEC_PAPER",
-          title: "Wet vs Dry Paper Specialist",
-          sub: "Moisture & Texture Classifier",
-          x: 445, y: 328, w: 215, h: 70
+          x: 445, y: 245, w: 215, h: 75
         }
       ]
     },
@@ -170,28 +164,19 @@ document.addEventListener("DOMContentLoaded", () => {
       number: "03",
       title: "Specialist Agents (Domain Experts)",
       explanation: "Parallel domain-expert neural networks invoked exclusively for ambiguous path items to resolve fine-grained material ambiguity.",
-      rationale: "Specialized models analyze specular reflection patterns and micro-textures to disambiguate transparent plastic from glass, and wet vs dry paper.",
+      rationale: "Specialized models analyze specular reflection patterns and micro-textures to disambiguate transparent plastic from glass.",
       pathNote: "PATH TYPE: Ambiguous Path ONLY (Stays dim/inactive during Fast Path cycles).",
       dataSpec: "Input: Sub-region ROI crop → Output: Refined Class Probability Logits",
       reference: "Corresponds to specialist.py & test_specialist_trigger.py"
     },
     "SPEC_GLASS_PLASTIC": {
-      number: "03a",
+      number: "03",
       title: "Glass vs Plastic Specialist",
       explanation: "Targeted secondary classifier evaluating specular highlights and surface reflection variance.",
       rationale: "Specialized CNN analyzing specular reflection patterns and transparency indices to disambiguate clear PET plastic from glass bottles.",
       pathNote: "PATH TYPE: Ambiguous Path ONLY (Invoked when material is Glass or Plastic with confidence < 0.80).",
       dataSpec: "Input: BBox Specular Crop → Output: Glass Logits vs Plastic Logits",
       reference: "Corresponds to specialist_model.pt & test_specialist_trigger.py"
-    },
-    "SPEC_PAPER": {
-      number: "03b",
-      title: "Wet vs Dry Paper Specialist",
-      explanation: "Targeted secondary classifier analyzing surface moisture attenuation and micro-textures.",
-      rationale: "Texture analysis network differentiating wet crumpled paper or contaminated fiber from dry cardboard and film.",
-      pathNote: "PATH TYPE: Ambiguous Path ONLY (Invoked when material is Paper with confidence < 0.80).",
-      dataSpec: "Input: BBox Moisture ROI → Output: Paper Moisture Attenuation Index",
-      reference: "Corresponds to specialist.py & specialist_meta.json"
     },
     "ARBITRATION_AGENT": {
       number: "04",
@@ -411,24 +396,22 @@ document.addEventListener("DOMContentLoaded", () => {
       </g>
     `;
 
-    // 3. Edges: Ambiguous Path Branching Node 02 -> Specialist 03a & 03b
+    // 3. Edges: Ambiguous Path Branching Node 02 -> Specialist 03
     const edgeAmbBranch = getEdgeState(1, 2, !isFast);
     const mAmbBranch = edgeAmbBranch.includes("active") ? "url(#arrow-active)" : (edgeAmbBranch.includes("done") ? "url(#arrow-done)" : "url(#arrow-default)");
     svgHtml += `
-      <path d="M 405 225 C 420 225, 420 280, 445 280" class="${edgeAmbBranch}" marker-end="${mAmbBranch}"/>
-      <path d="M 405 225 C 420 225, 420 363, 445 363" class="${edgeAmbBranch}" marker-end="${mAmbBranch}"/>
+      <path d="M 405 225 C 405 270, 340 282.5, 445 282.5" class="${edgeAmbBranch}" marker-end="${mAmbBranch}"/>
       <g class="edge-label-group">
-        <rect x="358" y="278" width="98" height="18" fill="var(--canvas-bg)" stroke="var(--border-color)" rx="3" opacity="0.92"/>
-        <text x="407" y="290" text-anchor="middle" class="edge-label amb-label">AMBIGUOUS (&lt;0.80)</text>
+        <rect x="296" y="273.5" width="98" height="18" fill="var(--canvas-bg)" stroke="var(--border-color)" rx="3" opacity="0.92"/>
+        <text x="345" y="285.5" text-anchor="middle" class="edge-label amb-label">AMBIGUOUS (&lt;0.80)</text>
       </g>
     `;
 
-    // 4. Edges: Specialist 03a & 03b -> Node 04 (Arbitration Agent)
+    // 4. Edges: Specialist 03 -> Node 04 (Arbitration Agent)
     const edgeSpecConv = getEdgeState(2, 3, !isFast);
     const mSpecConv = edgeSpecConv.includes("active") ? "url(#arrow-active)" : (edgeSpecConv.includes("done") ? "url(#arrow-done)" : "url(#arrow-default)");
     svgHtml += `
-      <path d="M 660 280 C 672 280, 672 225, 680 225" class="${edgeSpecConv}" marker-end="${mSpecConv}"/>
-      <path d="M 660 363 C 672 363, 672 225, 680 225" class="${edgeSpecConv}" marker-end="${mSpecConv}"/>
+      <path d="M 660 282.5 C 672 282.5, 672 225, 680 225" class="${edgeSpecConv}" marker-end="${mSpecConv}"/>
     `;
 
     // 5. Edge: Node 04 -> Node 05 (Arbitration Agent -> Motion Agent)
@@ -455,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <!-- Main return trunk line along bottom (y=450) -->
       <path d="M 885 392 L 885 450 L 122 450 L 122 245" class="${feedbackClass}" marker-end="${mFeedback}"/>
       <!-- Branching loop return line to Specialist Group (x=552) -->
-      <path d="M 552 450 L 552 410" class="${feedbackClass}" marker-end="${mFeedback}"/>
+      <path d="M 552 450 L 552 335" class="${feedbackClass}" marker-end="${mFeedback}"/>
       <g class="edge-label-group">
         <rect x="362" y="466" width="360" height="18" fill="var(--canvas-bg)" stroke="var(--border-color)" rx="3" opacity="0.92"/>
         <text x="542" y="478" text-anchor="middle" class="edge-label feedback-label">↺ RETRAINING FEEDBACK LOOP (WEIGHT &amp; POLICY UPDATE)</text>
@@ -469,16 +452,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     svgHtml += `
       <g class="mesh-group" id="node-03" onclick="window.openSpecificModal('SPECIALIST_AGENTS')">
-        <rect x="435" y="215" width="235" height="195" class="${groupClass}"/>
+        <rect x="435" y="215" width="235" height="120" class="${groupClass}"/>
         <text x="445" y="235" class="mesh-node-num">03 | SPECIALIST AGENTS</text>
       </g>
     `;
 
-    // Render Sub-nodes 03a & 03b inside Specialist Box
-    MESH_NODES[2].subNodes.forEach((sub, sIdx) => {
+    // Render Sub-nodes inside Specialist Box
+    MESH_NODES[2].subNodes.forEach((sub) => {
       const subState = specActive ? "active" : (specDone ? "done" : "");
-      const specKey = sIdx === 0 ? "SPEC_GLASS_PLASTIC" : "SPEC_PAPER";
-      const prefix = sIdx === 0 ? "3a." : "3b.";
+      const specKey = sub.id;
 
       let subBadgeText = "WAIT";
       if (subState === "active") subBadgeText = "RUNNING";
@@ -487,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
       svgHtml += `
         <g class="mesh-node ${subState}" onclick="event.stopPropagation(); window.openSpecificModal('${specKey}')">
           <rect x="${sub.x}" y="${sub.y}" width="${sub.w}" height="${sub.h}" class="mesh-node-rect"/>
-          <text x="${sub.x + 8}" y="${sub.y + 18}" class="mesh-node-title" style="font-size: 10px; font-weight: 600; letter-spacing: -0.1px;">${prefix} ${sub.title}</text>
+          <text x="${sub.x + 8}" y="${sub.y + 18}" class="mesh-node-title" style="font-size: 10px; font-weight: 600; letter-spacing: -0.1px;">03. ${sub.title}</text>
           <text x="${sub.x + 8}" y="${sub.y + 35}" class="mesh-node-sub" style="font-size: 8.5px;">${sub.sub}</text>
           <text x="${sub.x + 8}" y="${sub.y + 53}" class="mesh-node-status" style="font-size: 8.5px; fill: ${subState === 'active' ? 'var(--accent-primary)' : (subState === 'done' ? 'var(--accent-success)' : 'var(--text-subtle)')};">${subBadgeText}</text>
           <text x="${sub.x + sub.w - 18}" y="${sub.y + 53}" class="mesh-node-info">[i]</text>
